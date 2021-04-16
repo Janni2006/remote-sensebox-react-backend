@@ -3,3 +3,10 @@
     1. npm install
 
     2. npm start
+
+## Routes
+- api
+    - /api/device/register
+    - /api/queue
+    - /api/private-sketches     #currently untested
+    - /api/upload

@@ -6,8 +6,7 @@
   "scripts": {
     "build": "webpack",
     "start": "node server/index.js",
-    "dev-server": "nodemon server/index.js --watch",
-    "dev": "webpack --mode development --watch"
+    "dev": "nodemon server/index.js --watch"
   },
   "keywords": [],
   "author": "",
