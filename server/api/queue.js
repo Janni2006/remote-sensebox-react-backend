@@ -18,7 +18,7 @@ queueRouter.get('/queue', (req, res) => {
                     //         queue.private.begin_30 = true;
                     //     }
                     // }
-                    // queue.current_wait = queue.current_wait + time_left;
+                    queue.current_wait = queue.current_wait + time_left;
                     queue.queue.push({
                         id: item.id,
                         friendly_name: item.friendly_name,

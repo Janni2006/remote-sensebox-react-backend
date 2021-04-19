@@ -6,11 +6,11 @@ const shell = require('shelljs');
 module.exports = new CronJob('1 * * * * *', function () {
     axios.get(process.env.JSON_SERVER + '/uploads?queue_position=1').then(function (response) {
         if (response.data.length > 0) {
-            fs.writeFile(__basedir + '/code.ino', response.data[0].sketch, function (err) {
+            fs.writeFile(__basedir + '/sketch/sketch.ino', response.data[0].sketch, function (err) {
                 if (err) throw err;
                 // shell.exec('arduino-cli compile --upload code.ino --port /dev/ttyACM0 --fqbn sensebox:samd:sb').then((result)=>{console.log(result)}); //upload
-                shell.exec('arduino-cli compile ' + __basedir + '/code.ino --fqbn sensebox:samd:sb');//compile
-                shell.exec('rm ' + __basedir + '/code.ino');
+                shell.exec(`arduino-cli compile ${__basedir}/sketch/sketch.ino --fqbn sensebox:samd:sb`);//compile
+                shell.exec('rm ' + __basedir + '/sketch/sketch.ino');
             })
             axios.put(process.env.JSON_SERVER + '/uploads/' + response.data[0].id, {
                 sketch: response.data[0].sketch,

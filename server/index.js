@@ -33,6 +33,6 @@ app.listen(process.env.PORT || 4000, '0.0.0.0',
 //start json-server
 server.use(middlewares);
 server.use(router);
-server.listen(3000, '127.0.0.1', () => {
+server.listen(4500, '127.0.0.1', () => {
   console.log("JSON Server is running")
 })
