@@ -14,6 +14,8 @@ uploadRouter.post("/upload", async function (req, res) {
     console.log(req.body);
     const sketch = req.body.sketch;
     const sketch_name = req.body.sketch_name;
+    const blockly = req.body.sketch_xml ? true : false;
+    const blockly_xml = req.body.sketch_xml;
 
     var queuePosition = 1;
     await axios.get(process.env.JSON_SERVER + '/uploads').then(function (response) {
@@ -23,9 +25,9 @@ uploadRouter.post("/upload", async function (req, res) {
             }
         }
     });
-
     axios.post(process.env.JSON_SERVER + '/uploads', {
         sketch: sketch,
+        xml: blockly ? blockly_xml : null,
         queue_position: queuePosition,
         friendly_name: sketch_name,
         user: req.headers.deviceid,
@@ -34,6 +36,7 @@ uploadRouter.post("/upload", async function (req, res) {
         demo_completed: false
     })
         .then(res.status(200).send('File uploaded!'));
+
 });
 
 module.exports = uploadRouter;
