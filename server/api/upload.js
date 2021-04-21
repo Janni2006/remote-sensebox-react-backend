@@ -1,7 +1,5 @@
 const express = require('express');
 const crypto = require('crypto');
-const path = require('path');
-const fs = require('fs');
 const axios = require('axios').default;
 const uploadRouter = express.Router();
 
@@ -33,7 +31,8 @@ uploadRouter.post("/upload", async function (req, res) {
         user: req.headers.deviceid,
         updated: Date.now(),
         uploaded: 0,
-        demo_completed: false
+        demo_completed: false,
+        code: crypto.randomBytes(16).toString('hex'),
     })
         .then(res.status(200).send('File uploaded!'));
 

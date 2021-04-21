@@ -1,6 +1,7 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const app = express();
+const path = require('path');
 const cors = require('cors');
 const startJobs = require('./handlers/startHandler');
 const apiRouter = require('./api/api');
@@ -18,11 +19,13 @@ app.use(cors({ credentials: true }));
 app.use(cookieParser());
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-app.use(express.static('./public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/api", apiRouter);
 
-app.get('/', (req, res) => { res.sendFile(__dirname + "/index.html") });
+app.get('/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 startJobs();
 

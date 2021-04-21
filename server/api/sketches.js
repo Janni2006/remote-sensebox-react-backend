@@ -10,7 +10,8 @@ sketchRouter.get('/private-sketches', (req, res) => {
             data.push({
                 blockly: sketch.xml === null ? false : true,
                 finished: sketch.demo_completed,
-                friendly_name: sketch.friendly_name
+                friendly_name: sketch.friendly_name,
+                code: sketch.code,
             });
         }
         res.json(data);
@@ -19,6 +20,46 @@ sketchRouter.get('/private-sketches', (req, res) => {
             // handle error
             res.status(500).json(error)
         });
+});
+
+sketchRouter.get('/sketch/:sketchID', function (req, res) {
+    const sketchID = req.params.sketchID;
+    if (sketchID) {
+        axios.get(`${process.env.JSON_SERVER}/uploads?code=${sketchID}`).then(function (response) {
+            if (response.data.length > 1) {
+                return res.status(500).send({
+                    message: "There are multiple sketches with his ID"
+                });
+            }
+            if (response.data.length == 0) {
+                return res.status(404).send({
+                    message: "Sketch not found"
+                });
+            }
+            // if (response.data[0].user == req.keaders.deviceid) {
+            const data = {
+                xml: response.data[0].xml,
+                sketch: response.data[0].sketch,
+                blockly: response.data[0].xml === null ? false : true,
+                title: response.data[0].friendly_name,
+                code: response.data[0].code
+            }
+            res.json(data);
+            // } else {
+            //     return res.status(403).send({
+            //         message: "Permission denied"
+            //     });
+            // }
+        })
+            .catch(function (error) {
+                // handle error
+                res.status(500).json(error)
+            });
+    } else {
+        return res.status(400).send({
+            message: "No sketchID provided"
+        });
+    }
 });
 
 module.exports = sketchRouter;
