@@ -9,7 +9,6 @@ uploadRouter.get("/upload", (req, res) => {
 });
 
 uploadRouter.post("/upload", async function (req, res) {
-    console.log(req.body);
     const sketch = req.body.sketch;
     const sketch_name = req.body.sketch_name;
     const blockly = req.body.sketch_xml ? true : false;
@@ -32,6 +31,8 @@ uploadRouter.post("/upload", async function (req, res) {
         updated: Date.now(),
         uploaded: 0,
         demo_completed: false,
+        error: null,
+        serial: null,
         code: crypto.randomBytes(16).toString('hex'),
     })
         .then(res.status(200).send('File uploaded!'));

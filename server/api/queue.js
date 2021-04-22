@@ -8,7 +8,7 @@ queueRouter.get('/queue', (req, res) => {
 
         if (response.data.length > 0) {
             for (const item of response.data) {
-                if (!item.demo_completed) {
+                if (!item.demo_completed && !item.error) {
                     var progress = Date.now() - item.uploaded;
                     progress = (progress / process.env.SKETCH_RUNTIME) * 100;
                     progress = progress > 100 ? 100 : progress;
