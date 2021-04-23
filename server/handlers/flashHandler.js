@@ -18,7 +18,7 @@ const cronJob = new CronJob('0/2 * * * *', async function () {
                         updated: item.updated,
                         uploaded: item.uploaded,
                         demo_completed: true,
-                        error: null,
+                        error: item.error,
                         serial: item.serial,
                         code: item.code
                     });
@@ -34,7 +34,7 @@ const cronJob = new CronJob('0/2 * * * *', async function () {
                         uploaded: item.uploaded,
                         demo_completed: false,
                         error: null,
-                        serial: null,
+                        serial: item.serial,
                         code: item.code,
                     });
                 }
@@ -58,7 +58,7 @@ const cronJob = new CronJob('0/2 * * * *', async function () {
                                         uploaded: Date.now(),
                                         demo_completed: false,
                                         error: null,
-                                        serial: null,
+                                        serial: item.serial,
                                         code: item.code
                                     });
                                 } else {
