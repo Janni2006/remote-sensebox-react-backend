@@ -1,4 +1,4 @@
- <img src="/src/Components/sensebox_logo.svg?raw=true" height="128" alt="senseBox Logo"/>
+ <img src="sensebox_logo.svg?raw=true" height="128" alt="senseBox Logo"/>
 
 # Remote sensebox - Backend
 
