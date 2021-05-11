@@ -4,7 +4,7 @@ const serialHandler = require("./serialHandler");
 
 function startJobs() {
     deleteHandler.start();
-    flashHandler.start();
+    flashHandler.start("hallo");
     serialHandler.start();
 }
 
