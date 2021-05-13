@@ -3,6 +3,7 @@ const axios = require('axios').default;
 const db = require('../database');
 const fs = require('fs');
 const shell = require('shelljs');
+const logger = require('../config/winston')
 
 module.exports = new CronJob('0/2 * * * *', async function () {
     axios.get(process.env.JSON_SERVER + '/uploads?_order=queue_position').then(function (response) {
@@ -36,6 +37,7 @@ function uploadSketch(item) {
                     db.updateItem(item, { queue_position: 0, uploaded: Date.now() });
                 } else {
                     let error = stderr.toString();
+                    logger.error(error);
                     db.updateItem(
                         item,
                         {

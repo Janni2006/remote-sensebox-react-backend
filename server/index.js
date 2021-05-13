@@ -5,16 +5,21 @@ const cookieParser = require('cookie-parser');
 const app = express();
 const path = require('path');
 const cors = require('cors');
-const startJobs = require('./handlers/startHandler');
 const apiRouter = require('./api/api');
 const jsonServer = require('json-server');
 const jsonserver = jsonServer.create();
 const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults();
 const crypto = require("crypto");
-
-const update = require('./websockets/updateQueue')
 const uuid = require('./uuid');
+
+global.__basedir = __dirname.split("/").splice(0, __dirname.split("/").length - 1).join("/")
+global[uuid] = {}
+
+const updateQueue = require('./websockets/updateQueue');
+const updatePrivate = require('./websockets/updatePrivate');
+const startJobs = require('./handlers/startHandler');
+const logger = require('./config/winston');
 
 require('dotenv/config')
 
@@ -22,11 +27,6 @@ const randomId = () => { return crypto.randomBytes(8).toString("hex") };
 
 const { InMemorySessionStore } = require("./websockets/sessionStore");
 const sessionStore = new InMemorySessionStore();
-
-global.__basedir = __dirname.split("/").splice(0, __dirname.split("/").length - 1).join("/")
-global[uuid] = {}
-
-
 
 app.use(cors({ credentials: true }));
 app.use(cookieParser());
@@ -39,7 +39,7 @@ app.use("/api", apiRouter);
 const server = http.createServer(app);
 io = socketIo(server, {
   cors: {
-    origin: "http://192.168.1.134:3000",
+    origin: "*",
   },
 });
 
@@ -56,26 +56,32 @@ io.use((socket, next) => {
   next();
 });
 
+function update(userID) {
+  updateQueue();
+  updatePrivate(userID);
+}
+
 io.on('connection', (socket) => {
   // persist session
   sessionStore.saveSession(socket.sessionID, {
-    userID: socket.userID,
-    username: socket.username,
     connected: true,
   });
 
   // emit session details
   socket.emit("session", {
     sessionID: socket.sessionID,
-    userID: socket.userID,
   });
 
-  // join the "userID" room
-  socket.join(socket.userID);
+  socket.on("initialQueue", () => {
+
+  });
+
+  // join the "sessionID" room
+  socket.join(socket.sessionID);
 
   // notify users upon disconnection
   socket.on("disconnect", async () => {
-    const matchingSockets = await io.in(socket.userID).allSockets();
+    const matchingSockets = await io.in(socket.sessionID).allSockets();
     const isDisconnected = matchingSockets.size === 0;
     if (isDisconnected) {
       // update the connection status of the session
@@ -84,14 +90,14 @@ io.on('connection', (socket) => {
       });
     }
   });
-  update();
+  update(socket.sessionID);
 });
 
 global[uuid].io = io;
 
-app.get('/*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// app.get('/*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// });
 
 startJobs();
 
@@ -103,5 +109,5 @@ server.listen(process.env.PORT || 4000, '0.0.0.0',
 jsonserver.use(middlewares);
 jsonserver.use(router);
 jsonserver.listen(4500, '127.0.0.1', () => {
-  console.log("JSON Server is running")
+  logger.debug("JSON Server started");
 })
