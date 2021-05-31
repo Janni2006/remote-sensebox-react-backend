@@ -7,8 +7,9 @@ module.exports = (userID) => {
 
         for (const sketch of response.data) {
             data.push({
-                blockly: sketch.xml === null ? false : true,
+                blockly: sketch.xml === "" || sketch.xml === null ? false : true,
                 finished: sketch.demo_completed ? sketch.error === null ? true : false : false,
+                running: sketch.demo_completed ? false : sketch.uploaded > 0 ? true : false,
                 error: sketch.error === null ? false : true,
                 friendly_name: sketch.friendly_name,
                 code: sketch.code,

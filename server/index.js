@@ -110,4 +110,10 @@ jsonserver.use(middlewares);
 jsonserver.use(router);
 jsonserver.listen(4500, '127.0.0.1', () => {
   logger.debug("JSON Server started");
-})
+});
+
+// const Test = require('./camera');
+// const cam = new Test(24);
+
+// cam.start();
+// cam.start_cronJob();

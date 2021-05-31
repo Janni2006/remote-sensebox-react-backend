@@ -47,6 +47,7 @@ sketchRouter.get('/sketch/:sketchID', function (req, res) {
                 serial: response.data[0].serial,
                 title: response.data[0].friendly_name,
                 code: response.data[0].code,
+                running: response.data[0].demo_completed ? false : response.data[0].uploaded > 0 ? true : false,
                 finished: response.data[0].demo_completed ? response.data[0].error === null ? true : false : false,
             }
             res.json(data);

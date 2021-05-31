@@ -9,7 +9,7 @@ module.exports = () => {
         if (response.data.length > 0) {
             for (const item of response.data) {
                 if (!item.demo_completed && !item.error) {
-                    var progress = Date.now() - item.uploaded;
+                    var progress = item.uploaded > 0 ? Date.now() - item.uploaded : 0;
                     progress = (progress / process.env.SKETCH_RUNTIME) * 100;
                     progress = progress > 100 ? 100 : progress;
                     var time_left = item.uploaded ? process.env.SKETCH_RUNTIME * (100 - progress) : process.env.SKETCH_RUNTIME;

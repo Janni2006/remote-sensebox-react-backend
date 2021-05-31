@@ -6,7 +6,7 @@ const shell = require('shelljs');
 const logger = require('../config/winston')
 
 module.exports = new CronJob('0/2 * * * *', async function () {
-    axios.get(process.env.JSON_SERVER + '/uploads?_order=queue_position').then(function (response) {
+    axios.get(process.env.JSON_SERVER + '/uploads?_order=queue_position').then(async function (response) {
         if (response.data.length > 0) {
             let uploaded = false;
             for (const item of response.data) {
@@ -18,6 +18,7 @@ module.exports = new CronJob('0/2 * * * *', async function () {
                 }
                 if (item.queue_position == 1 && !uploaded) {
                     uploaded = true;
+                    db.updateItem(item, { queue_position: 0 });
                     uploadSketch(item);
                 }
             }
@@ -34,10 +35,10 @@ function uploadSketch(item) {
             function (code, stdout, stderr) {
                 shell.exec('rm ' + __basedir + '/sketch/sketch.ino');
                 if (code == 0) {
+                    logger.info(`Uploaded sketch ${item.friendly_name}`)
                     db.updateItem(item, { queue_position: 0, uploaded: Date.now() });
                 } else {
                     let error = stderr.toString();
-                    logger.error(error);
                     db.updateItem(
                         item,
                         {
@@ -47,6 +48,8 @@ function uploadSketch(item) {
                             error: error
                         }
                     );
+                    console.log(stderr)
+                    logger.error(error);
                 }
             });
     });

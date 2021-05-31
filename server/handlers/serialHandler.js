@@ -4,11 +4,13 @@ const SerialPort = require('serialport');
 const Readline = SerialPort.parsers.Readline;
 const parser = new Readline();
 const logger = require('../config/winston');
+const uuid = require('../uuid');
 
 /* abstract */ class SerialStore {
-    findSession(id) { }
-    saveSession(id, session) { }
-    findAllSessions() { }
+    setRunningSketch(id, user) { }
+    addSerial(data) { }
+    clearSerial() { }
+    getAllSerial() { }
 }
 
 class InMemorySerialStore extends SerialStore {
@@ -18,8 +20,9 @@ class InMemorySerialStore extends SerialStore {
         this.sketch = new String();
     }
 
-    setRunningSketch(id) {
+    setRunningSketch(id, user) {
         this.sketch = id;
+        this.user = user;
     }
 
     addSerial(data) {
@@ -28,7 +31,8 @@ class InMemorySerialStore extends SerialStore {
 
     clearSerial() {
         this.serial = new String();
-        this.sketch = new SerialPort();
+        this.sketch = new String();
+        this.user = new String();
     }
 
     getAllSerial() {
@@ -37,6 +41,10 @@ class InMemorySerialStore extends SerialStore {
 
     getRunningSketch() {
         return this.sketch;
+    }
+
+    getSketchUser() {
+        return this.user;
     }
 }
 
@@ -47,17 +55,15 @@ const port = new SerialPort('/dev/ttyACM0', {
     autoOpen: false
 })
 
-var serial = "";
-
 const serialStore = new InMemorySerialStore();
 
 port.pipe(parser);
 
 port.on('close', function (err) {
-    logger.debug("Serial Port closed")
-    axios.get(`${process.env.JSON_SERVER}/uploads?code=${serialStore.getRunningSketch()}`).then(function (response) {
+    logger.info("Serial Port closed");
+    axios.get(`${process.env.JSON_SERVER}/uploads?code=${serialStore.getRunningSketch()}`).then(async function (response) {
         if (response.data.length > 0) {
-            axios.put(process.env.JSON_SERVER + '/uploads/' + response.data[0].id, {
+            await axios.put(process.env.JSON_SERVER + '/uploads/' + response.data[0].id, {
                 sketch: response.data[0].sketch,
                 xml: response.data[0].xml,
                 queue_position: 0,
@@ -65,15 +71,14 @@ port.on('close', function (err) {
                 user: response.data[0].user,
                 updated: response.data[0].updated,
                 uploaded: response.data[0].uploaded,
-                demo_completed: false,
-                error: null,
+                demo_completed: response.data[0].demo_completed,
+                error: response.data[0].error,
                 serial: serialStore.getAllSerial(),
                 code: response.data[0].code,
             });
         }
+        serialStore.clearSerial();
     });
-    console.log("serial: ", serialStore.getAllSerial());
-    serialStore.clearSerial();
 });
 
 port.on('error', function (err) {
@@ -81,22 +86,30 @@ port.on('error', function (err) {
 });
 
 port.on('open', function () {
-    logger.debug("Serial Port opened")
+    logger.info("Serial Port opened")
     axios.get(process.env.JSON_SERVER + '/uploads?queue_position=0&demo_completed=false').then(function (response) {
         if (response.data.length > 0) {
-            serialStore.setRunningSketch(response.data[0].code);
+            serialStore.setRunningSketch(response.data[0].code, response.data[0].user);
         }
     });
 });
 
 parser.on('data', (data) => {
     serialStore.addSerial(data);
+    global[uuid].io.to(serialStore.getSketchUser()).emit("senseboxSerial", serialStore.getAllSerial());
 });
 
-const cronJob = new CronJob('20 0/2 * * * *', async function () {
-    if (!port.isOpen) {
-        port.open();
-    }
+const cronJob = new CronJob('20 0/2 * * * *', function () {
+    axios.get(process.env.JSON_SERVER + '/uploads?demo_completed=false&_order=queue_position').then(async function (response) {
+        if (response.data.length > 0) {
+            if (!port.isOpen) {
+                await port.open();
+            }
+        }
+    })
+        .catch(function (error) {
+            logger.error(error.toString());
+        });
 }, null, true, 'America/Los_Angeles');
 
 module.exports = cronJob;

@@ -7,7 +7,7 @@ function updateItem(item, { queue_position, uploaded, demo_completed, error, ser
     axios.put(process.env.JSON_SERVER + '/uploads/' + item.id, {
         sketch: item.sketch,
         xml: item.xml,
-        queue_position: queue_position,
+        queue_position: queue_position != null ? queue_position : item.queue_position,
         friendly_name: item.friendly_name,
         user: item.user,
         updated: item.updated,
@@ -17,6 +17,10 @@ function updateItem(item, { queue_position, uploaded, demo_completed, error, ser
         serial: serial ? serial : item.serial,
         code: item.code
     });
+    const updateInterval = setInterval(() => {
+        ioUpdateQueue();
+
+    }, 1000);
     ioUpdateQueue();
     ioUpdatePrivate(item.user);
 }
@@ -29,20 +33,21 @@ async function addItem(sketch, xml = null, friendly_name, user) {
                 queuePosition++;
             }
         }
+        axios.post(process.env.JSON_SERVER + '/uploads', {
+            sketch: sketch,
+            xml: xml,
+            queue_position: queuePosition,
+            friendly_name: friendly_name,
+            user: user,
+            updated: Date.now(),
+            uploaded: 0,
+            demo_completed: false,
+            error: null,
+            serial: null,
+            code: crypto.randomBytes(16).toString('hex'),
+        });
     });
-    axios.post(process.env.JSON_SERVER + '/uploads', {
-        sketch: sketch,
-        xml: xml,
-        queue_position: queuePosition,
-        friendly_name: friendly_name,
-        user: user,
-        updated: Date.now(),
-        uploaded: 0,
-        demo_completed: false,
-        error: null,
-        serial: null,
-        code: crypto.randomBytes(16).toString('hex'),
-    });
+
     ioUpdateQueue();
     ioUpdatePrivate(user);
 }
