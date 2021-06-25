@@ -1,5 +1,7 @@
 const CronJob = require('cron').CronJob;
 const axios = require('axios').default;
+const shell = require('shelljs');
+const fs = require('fs');
 
 module.exports = new CronJob('1 * * * * *', async function () {
     axios.get(process.env.JSON_SERVER + '/uploads').then(function (response) {
@@ -9,4 +11,11 @@ module.exports = new CronJob('1 * * * * *', async function () {
             }
         }
     });
+    videos = fs.readdirSync(__basedir + '/videos/');
+
+    for (var i = 0; i < videos.length; i++) {
+        if (videos[i].split(".")[0] <= Date.now() - 100 * 60 * 60 * 6) {
+            shell.exec(`rm ${__basedir}/videos/${videos[i]}`, { async: true, silent: true })
+        }
+    }
 }, null, true, 'America/Los_Angeles');

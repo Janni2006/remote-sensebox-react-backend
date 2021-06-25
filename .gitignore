@@ -104,6 +104,6 @@ dist
 .tern-port
 
 # ignore uploaded sketches
-sketches/
+sketches/*
 
 .db.json
