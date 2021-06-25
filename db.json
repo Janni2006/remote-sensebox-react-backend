@@ -265,6 +265,20 @@
       "serial": null,
       "code": "7541a4583f81e7b4d79390fd0c682a0c",
       "id": 19
+    },
+    {
+      "sketch": "void setup() {\n\n\n}\n\n\nvoid loop() {\n\n}\n",
+      "xml": "<xml xmlns=\"https://developers.google.com/blockly/xml\">\n  <block type=\"arduino_functions\" id=\"QWW|$jB8+*EL;}|#uA\" deletable=\"false\" x=\"27\" y=\"16\"></block>\n</xml>",
+      "queue_position": 0,
+      "friendly_name": "exciting-crab",
+      "user": "138d008e17d5e8fe",
+      "updated": 1624648536163,
+      "uploaded": 1624648565933,
+      "demo_completed": true,
+      "error": "No device found on ttyACM0\nError during Upload: uploading error: uploading error: exit status 1\n",
+      "serial": null,
+      "code": "98cee4b44ef015aec021d29c092816f1",
+      "id": 20
     }
   ],
   "workshops": [
