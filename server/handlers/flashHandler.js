@@ -5,23 +5,32 @@ const fs = require('fs');
 const shell = require('shelljs');
 const logger = require('../config/winston')
 
-module.exports = new CronJob('0/2 * * * *', async function () {
+module.exports = new CronJob('0/10 * * * * *', async function () {
     axios.get(process.env.JSON_SERVER + '/uploads?_order=queue_position').then(async function (response) {
         if (response.data.length > 0) {
-            let uploaded = false;
+            let run_next = true;
             for (const item of response.data) {
-                if (item.queue_position == 0 && item.demo_completed == false && item.uploaded + 1 <= Date.now()) {
-                    db.updateItem(item, { demo_completed: true });
-                }
-                if (item.queue_position > 1) {
-                    db.updateItem(item, { queue_position: item.queue_position - 1 })
-                }
-                if (item.queue_position == 1 && !uploaded) {
-                    uploaded = true;
-                    db.updateItem(item, { queue_position: 0 });
-                    uploadSketch(item);
+                if (item.queue_position == 0 && item.demo_completed == false && item.uploaded + (process.env.SKETCH_RUNTIME / 10000) > Date.now()) {
+                    run_next=false
                 }
             }
+            if(run_next==true){
+                console.log("run next")
+                let uploaded = false;
+                for (const item of response.data) {
+                    if (item.queue_position == 0 && item.demo_completed == false && item.uploaded + (process.env.SKETCH_RUNTIME / 10000) <= Date.now()) {
+                        db.updateItem(item, { demo_completed: true });
+                    }
+                    if (item.queue_position > 1) {
+                        db.updateItem(item, { queue_position: item.queue_position - 1 })
+                    }
+                    if (item.queue_position == 1 && !uploaded) {
+                        uploaded = true;
+                        db.updateItem(item, { queue_position: 0 });
+                        uploadSketch(item);
+                    }
+                }
+            }            
         }
     });
 }, null, true, 'America/Los_Angeles');

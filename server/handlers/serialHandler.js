@@ -48,10 +48,8 @@ class InMemorySerialStore extends SerialStore {
     }
 }
 
-const wsSerial = require('../websockets/wsSerial');
-
 const port = new SerialPort('/dev/ttyACM0', {
-    baudRate: 9600,
+    baudRate: parseInt(process.env.SERIAL_RATE),
     autoOpen: false
 })
 
